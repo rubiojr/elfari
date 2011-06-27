@@ -24,6 +24,9 @@ bot = Cinch::Bot.new do
     on :message, /dimelo (.*)/ do |m, query|
       RestClient.post "http://bigdick:4567/say", :text => query
     end
+    on :message, /in-inglis (.*)/ do |m, query|
+      RestClient.post "http://bigdick:4567/say", :text => query, :voice => 'Alex'
+    end
     on :message, /ayudame/ do |m|
       m.reply 'Ahi van los comandos, chavalote!: ayudame dimelo ponmelo volumen'
     end
