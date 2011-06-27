@@ -7,6 +7,7 @@
 require 'rubygems'
 require 'cinch'
 require 'yaml'
+require 'rest-client'
 
 conf = YAML.load_file 'config.yml'
 
@@ -17,17 +18,17 @@ bot = Cinch::Bot.new do
       c.nick = conf[:nick]
     end
 
-    on :privmsg, /ponmelo (http:\/\/www\.youtube\.com.*)/ do |m, query|
-      `curl -X POST "http://bigdick:4567/youtube" -d url='#{query}'`
-    end
     on :message, /ponmelo (http:\/\/www\.youtube\.com.*)/ do |m, query|
-      `curl -X POST "http://bigdick:4567/youtube" -d url='#{query}'`
+      RestClient.post "http://bigdick:4567/youtube", :url => query
     end
     on :message, /dimelo (.*)/ do |m, query|
-      `curl -X POST "http://bigdick:4567/say" -d text='#{query}'`
+      RestClient.post "http://bigdick:4567/say", :text => query
     end
     on :message, /ayudame/ do |m|
       m.reply 'Ahi van, chavalote!: ayudame dimelo ponmelo'
+    end
+    on :message, /volumen (.*)/ do |m, query|
+      RestClient.post "http://bigdick:4567/volume", :vol => query
     end
 
 end
