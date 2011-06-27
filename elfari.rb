@@ -6,12 +6,15 @@
 #
 require 'rubygems'
 require 'cinch'
+require 'yaml'
+
+conf = YAML.load_file 'config.yml'
 
 bot = Cinch::Bot.new do
     configure do |c|
-      c.server = "irc.freenode.org"
-      c.channels = ["#abiquo"]
-      c.nick = 'elfari'
+      c.server = conf[:server]
+      c.channels = conf[:channels]
+      c.nick = conf[:nick]
     end
 
     on :privmsg, /ponmelo (http:\/\/www\.youtube\.com.*)/ do |m, query|
