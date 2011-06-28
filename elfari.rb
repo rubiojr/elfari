@@ -35,7 +35,7 @@ bot = Cinch::Bot.new do
     end
     on :message, /ponme\s*argo\s*(.*)/ do |m, query|
       db = File.readlines('database')
-      play = db[(rand * (db.size -1)).to_i]
+      play = db[(rand * (db.size - 1)).to_i]
       RestClient.post "http://bigdick:4567/youtube", :url => play
     end
 
