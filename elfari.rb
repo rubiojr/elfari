@@ -33,6 +33,11 @@ bot = Cinch::Bot.new do
     on :message, /volumen (.*)/ do |m, query|
       RestClient.post "http://bigdick:4567/volume", :vol => query
     end
+    on :message, /ponme\s*argo\s*(.*)/ do |m, query|
+      db = File.readlines('database')
+      play = db[(rand * db.size).to_i]
+      RestClient.post "http://bigdick:4567/youtube", :url => play
+    end
 
 end
 
