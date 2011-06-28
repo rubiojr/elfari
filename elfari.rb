@@ -20,6 +20,7 @@ bot = Cinch::Bot.new do
 
     on :message, /ponmelo\s*(http:\/\/www\.youtube\.com.*)/ do |m, query|
       RestClient.post "http://bigdick:4567/youtube", :url => query
+      m.reply "Tomalo, chato: #{RestClient.get('http://bigdick:4567/current_video')}"
     end
     on :message, /dimelo (.*)/ do |m, query|
       RestClient.post "http://bigdick:4567/say", :text => query
@@ -37,6 +38,7 @@ bot = Cinch::Bot.new do
       db = File.readlines('database')
       play = db[(rand * (db.size - 1)).to_i]
       RestClient.post "http://bigdick:4567/youtube", :url => play
+      m.reply "Tomalo, chato: #{RestClient.get('http://bigdick:4567/current_video')}"
     end
 
 end
