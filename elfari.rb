@@ -18,7 +18,7 @@ bot = Cinch::Bot.new do
       c.nick = conf[:nick]
     end
 
-    on :message, /ponmelo (http:\/\/www\.youtube\.com.*)/ do |m, query|
+    on :message, /ponmelo\s*(http:\/\/www\.youtube\.com.*)/ do |m, query|
       RestClient.post "http://bigdick:4567/youtube", :url => query
     end
     on :message, /dimelo (.*)/ do |m, query|
