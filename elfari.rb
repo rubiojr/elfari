@@ -44,7 +44,7 @@ bot = Cinch::Bot.new do
     end
     on :message, /ponme\s*argo\s*(.*)/ do |m, query|
       db = File.readlines('database')
-      play = db[(rand * (db.size - 1)).to_i]
+      play = db[(rand * (db.size - 1)).to_i].split(/ /)[0]
       RestClient.post "http://bigdick:4567/youtube", :url => play
       title = RestClient.get('http://bigdick:4567/current_video')
       while title.nil? or title.strip.chomp.empty?
