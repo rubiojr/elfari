@@ -3,6 +3,7 @@
 #
 # sudo apt-get install rubygems
 # gem install cinch
+# gem install rest-client
 #
 require 'rubygems'
 require 'cinch'
@@ -52,7 +53,24 @@ bot = Cinch::Bot.new do
       end
       m.reply "Tomalo, chato: #{title}"
     end
-
+    on :message, /ponme\s*er\s*(.*)/ do |m, query|
+        db = File.readlines('database')
+        found = false
+        db.each do |line|
+            if line =~ /#{query}/i
+                play = line.split(/ /)[0]
+                RestClient.post "http://bigdick:4567/youtube", :url => play
+                title = RestClient.get('http://bigdick:4567/current_video')
+                while title.nil? or title.strip.chomp.empty?
+                    title = RestClient.get('http://bigdick:4567/current_video')
+                end
+                m.reply "Tomalo, chato: #{title}"
+                found = true
+                break
+            end
+        end
+        m.reply "No tengo er: #{query}" if !found
+    end
 end
 
 bot.start
