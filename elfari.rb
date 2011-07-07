@@ -74,7 +74,8 @@ bot = Cinch::Bot.new do
                 break
             end
         end
-        m.reply "No tengo er: #{query}" if !found
+	RestClient.post "http://bigdick:4567/say", :text => "No tengo er #{query}" if !found
+	m.reply "No tengo er: #{query}" if !found
     end
 end
 
