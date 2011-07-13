@@ -39,7 +39,7 @@ bot = Cinch::Bot.new do
       RestClient.post "http://bigdick:4567/say", :text => query, :voice => 'Alex'
     end
     on :message, /ayudame/ do |m|
-      m.reply 'Ahi van los comandos, chavalote!: ayudame dimelo ponmelo volumen'
+      m.reply 'Ahi van los comandos, chavalote!: ayudame dimelo ponmelo volumen mele in-inglis ponmeargo ponmeer quetiene'
     end
     on :message, /volumen (.*)/ do |m, query|
       RestClient.post "http://bigdick:4567/volume", :vol => query
@@ -76,6 +76,17 @@ bot = Cinch::Bot.new do
         end
 	RestClient.post "http://bigdick:4567/say", :text => "No tengo er #{query}" if !found
 	m.reply "No tengo er: #{query}" if !found
+    end
+    on :message, /que\s*tiene/ do |m, query|
+	db = File.readlines('database')
+	list = "Tengo esto piltrafa:\n"
+	i=1
+	db.each do |line|
+		f=line.split(/ - /)[0].length + 3
+		list += i.to_s() + " " + line[f..line.length]
+		i+=1
+	end
+	m.reply "#{list}"
     end
 end
 
