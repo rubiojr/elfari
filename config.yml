@@ -1,5 +1,5 @@
 ---
-:nick: elfari
+:nick: sergi-test
 :server: irc.freenode.net
 :channels:
-  - "#foobar chan-key"
+  - "#sergi-test"
