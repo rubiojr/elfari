@@ -6,9 +6,11 @@
 # gem install rest-client
 #
 require 'rubygems'
+require 'webee'
 require 'cinch'
 require 'yaml'
 require 'rest-client'
+require 'alchemist'
 
 if RUBY_VERSION =~ /1.9/
   Encoding.default_external = Encoding::UTF_8
@@ -58,6 +60,7 @@ bot = Cinch::Bot.new do
     end
     m.reply "Tomalo, chato: #{title}"
   end
+
   on :message, /ponme\s*er\s*(.*)/ do |m, query|
     db = File.readlines('database')
     found = false
@@ -77,6 +80,7 @@ bot = Cinch::Bot.new do
   	RestClient.post "http://bigdick:4567/say", :text => "No tengo er #{query}" if !found
   	m.reply "No tengo er: #{query}" if !found
   end
+
   on :message, /que\s*tiene/ do |m, query|
 	  db = File.readlines('database')
 	  list = "Tengo esto piltrafa:\n"
@@ -87,6 +91,50 @@ bot = Cinch::Bot.new do
 		  i+=1
 	  end
 	  m.reply "#{list}"
+  end
+
+  on :message, /mothership (.*)/ do |m, query|
+    WeBee::Api.user = conf[:abiquo][:user]
+    WeBee::Api.password = conf[:abiquo][:password]
+    WeBee::Api.url = "http://#{conf[:abiquo][:host]}/api"
+    tokens = query.split
+    command = tokens[0].strip.chomp
+    case command
+    when 'cloud-stats'
+      stats = {
+        :free_hd => 0, 
+        :real_hd => 0,
+        :used_hd => 0, 
+        :hypervisors => 0,
+        :free_ram => 0,
+        :real_ram => 0,
+        :used_ram => 0,
+        :available_cpus => 0
+      }
+      WeBee::Datacenter.all.each do |dc|
+        dc.racks.each do |rack|
+          rack.machines.each do |m|
+            stats[:hypervisors] += 1
+            stats[:used_ram] += m.ram_used.to_i
+            stats[:real_ram] += m.real_ram.to_i
+            stats[:available_cpus] += m.real_cpu.to_i
+            stats[:used_hd] += m.hd_used.to_i.bytes.to.gigabytes.to_f.round
+            stats[:real_hd] += m.real_hd.to_i.bytes.to.gigabytes.to_f.round
+          end
+        end
+      end
+      stats[:free_ram] = stats[:real_ram] - stats[:used_ram]
+      stats[:free_hd] = stats[:real_hd] - stats[:used_hd]
+      m.reply 'Cloud Statistics for ' + conf[:abiquo][:host].upcase
+      m.reply "Hypevisors:        #{stats[:hypervisors]}"
+      m.reply "Available CPUs:    #{stats[:available_cpus]}"
+      m.reply "Total RAM:         #{stats[:real_ram].megabytes.to.gigabytes} GB"
+      m.reply "Free RAM:          #{stats[:free_ram].megabytes.to.gigabytes} GB"
+      m.reply "Used RAM:          #{stats[:used_ram].megabytes.to.gigabytes} GB"
+      m.reply "Total HD:          #{stats[:real_hd]} GB"
+      m.reply "Free HD:           #{stats[:free_hd]} GB"
+      m.reply "Used HD:           #{stats[:used_hd]} GB"
+    end
   end
 end
 

@@ -1,5 +1,9 @@
 ---
-:nick: sergi-test
+:nick: elfari-test
 :server: irc.freenode.net
 :channels:
-  - "#sergi-test"
+  - "#elfari-test"
+:abiquo:
+  :host: mothership
+  :user: admin
+  :password: xabiquo
