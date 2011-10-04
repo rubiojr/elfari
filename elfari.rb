@@ -157,7 +157,8 @@ bot = Cinch::Bot.new do
     abusers = {}
     WeBee::Enterprise.all.each do |ent|
       ent.users.each do |user|
-        abusers[user.name] = { :full_name => "#{user.name} #{user.surname}", :email => user.email, :vms_number => user.virtual_machines.size, :vms => user.virtual_machines }
+        vms = (user.virtual_machines.find_all{ |vm| vm.state == 'RUNNING'})
+        abusers[user.name] = { :full_name => "#{user.name} #{user.surname}", :email => user.email, :vms_number => vms.size, :vms => vms }
       end
     end
 
@@ -165,6 +166,7 @@ bot = Cinch::Bot.new do
       a[1][:vms_number] <=> b[1][:vms_number]
     end.reverse
 
+    m.reply "Running VMs, per user"
     abusers.each do |a|
       if a[1][:vms_number] > 0
         m.reply "User: " + "#{a[1][:full_name]}".ljust(40) + "VMs: " + "#{a[1][:vms_number]}"
