@@ -13,26 +13,50 @@ require 'rest-client'
 require 'alchemist'
 require 'rufus/scheduler'
 
+module ElFari
+
+  class Config
+
+    def self.config
+      YAML.load_file(File.expand_path(File.dirname(__FILE__)) + '/config.yml')
+    end
+
+  end
+
+end
+
+class Motherfuckers
+  include Cinch::Plugin
+
+  timer 900, method: :say
+  def say
+    ElFari::Config.config[:channels].each do |c|
+      Channel(c).send "Any news, motherfuckers?"
+    end
+  end
+
+end
+
 class GitDude
   include Cinch::Plugin
 
   timer 5, method: :new_stuff
   def new_stuff
-    conf = YAML.load_file('config.yml')[:gitdude]
+    conf = ElFari::Config.config[:gitdude]
     conf[:repos].each do |r|
       next if not File.directory?(r[:path])
-      old_dir = Dir.pwd
-      Dir.chdir r[:path]
+      ENV['GIT_DIR'] = r[:path] + '/.git'
       `git fetch -v 2>&1 | grep -F -- '->'`.each_line do |l|
         if l =~ /.*\.\..*/
           tokens = l.split
           commit_range = tokens[0]
           branch_name = tokens[1]
           commit_messages = `git log #{commit_range} --pretty=format:'%s (%an)'`
-          Channel('#elfari-test').send "New commits in #{r[:name]}\n#{commit_messages}" 
+          ElFari::Config.config[:channels].each do |c|
+            Channel(c).send "New commits in #{r[:name]}\n#{commit_messages}" 
+          end
         end
       end
-      Dir.chdir old_dir
     end
   end
 end
@@ -43,14 +67,14 @@ if RUBY_VERSION =~ /1.9/
   Encoding.default_internal = Encoding::UTF_8
 end
 
-conf = YAML.load_file 'config.yml'
+conf = ElFari::Config.config
 
 bot = Cinch::Bot.new do
   configure do |c|
     c.server = conf[:server]
     c.channels = conf[:channels]
     c.nick = conf[:nick]
-    c.plugins.plugins = [GitDude]
+    c.plugins.plugins = [GitDude, Motherfuckers]
   end
 
   on :message, /ponmelo\s*(http:\/\/www\.youtube\.com.*)/ do |m, query|
