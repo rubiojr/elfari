@@ -68,20 +68,22 @@ class GitDude
   end
 end
 
-
 if RUBY_VERSION =~ /1.9/
   Encoding.default_external = Encoding::UTF_8
   Encoding.default_internal = Encoding::UTF_8
 end
 
 conf = ElFari::Config.config
+WeBee::Api.user = conf[:abiquo][:user]
+WeBee::Api.password = conf[:abiquo][:password]
+WeBee::Api.url = "http://#{conf[:abiquo][:host]}/api"
 
 bot = Cinch::Bot.new do
   configure do |c|
     c.server = conf[:server]
     c.channels = conf[:channels]
     c.nick = conf[:nick]
-    c.plugins.plugins = [GitDude, Motherfuckers]
+    c.plugins.plugins = [Motherfuckers, GitDude]
   end
 
   on :message, /ponmelo\s*(http:\/\/www\.youtube\.com.*)/ do |m, query|
@@ -151,48 +153,59 @@ bot = Cinch::Bot.new do
 	  m.reply "#{list}"
   end
 
-  on :message, /mothership (.*)/ do |m, query|
-    WeBee::Api.user = conf[:abiquo][:user]
-    WeBee::Api.password = conf[:abiquo][:password]
-    WeBee::Api.url = "http://#{conf[:abiquo][:host]}/api"
-    tokens = query.split
-    command = tokens[0].strip.chomp
-    case command
-    when 'cloud-stats'
-      stats = {
-        :free_hd => 0, 
-        :real_hd => 0,
-        :used_hd => 0, 
-        :hypervisors => 0,
-        :free_ram => 0,
-        :real_ram => 0,
-        :used_ram => 0,
-        :available_cpus => 0
-      }
-      WeBee::Datacenter.all.each do |dc|
-        dc.racks.each do |rack|
-          rack.machines.each do |m|
-            stats[:hypervisors] += 1
-            stats[:used_ram] += m.ram_used.to_i
-            stats[:real_ram] += m.real_ram.to_i
-            stats[:available_cpus] += m.real_cpu.to_i
-            stats[:used_hd] += m.hd_used.to_i.bytes.to.gigabytes.to_f.round
-            stats[:real_hd] += m.real_hd.to_i.bytes.to.gigabytes.to_f.round
-          end
+  on :message, /mothership abusers/ do  |m, query|
+    abusers = {}
+    WeBee::Enterprise.all.each do |ent|
+      ent.users.each do |user|
+        abusers[user.name] = { :full_name => "#{user.name} #{user.surname}", :email => user.email, :vms_number => user.virtual_machines.size, :vms => user.virtual_machines }
+      end
+    end
+
+    abusers = abusers.sort do |a,b|
+      a[1][:vms_number] <=> b[1][:vms_number]
+    end.reverse
+
+    abusers.each do |a|
+      if a[1][:vms_number] > 0
+        m.reply "User: " + "#{a[1][:full_name]}".ljust(40) + "VMs: " + "#{a[1][:vms_number]}"
+      end
+    end
+  end
+
+  on :message, /mothership cloud-stats/ do |m, query|
+    stats = {
+      :free_hd => 0, 
+      :real_hd => 0,
+      :used_hd => 0, 
+      :hypervisors => 0,
+      :free_ram => 0,
+      :real_ram => 0,
+      :used_ram => 0,
+      :available_cpus => 0
+    }
+    WeBee::Datacenter.all.each do |dc|
+      dc.racks.each do |rack|
+        rack.machines.each do |m|
+          stats[:hypervisors] += 1
+          stats[:used_ram] += m.ram_used.to_i
+          stats[:real_ram] += m.real_ram.to_i
+          stats[:available_cpus] += m.real_cpu.to_i
+          stats[:used_hd] += m.hd_used.to_i.bytes.to.gigabytes.to_f.round
+          stats[:real_hd] += m.real_hd.to_i.bytes.to.gigabytes.to_f.round
         end
       end
-      stats[:free_ram] = stats[:real_ram] - stats[:used_ram]
-      stats[:free_hd] = stats[:real_hd] - stats[:used_hd]
-      m.reply 'Cloud Statistics for ' + conf[:abiquo][:host].upcase
-      m.reply "Hypevisors:        #{stats[:hypervisors]}"
-      m.reply "Available CPUs:    #{stats[:available_cpus]}"
-      m.reply "Total RAM:         #{stats[:real_ram].megabytes.to.gigabytes} GB"
-      m.reply "Free RAM:          #{stats[:free_ram].megabytes.to.gigabytes} GB"
-      m.reply "Used RAM:          #{stats[:used_ram].megabytes.to.gigabytes} GB"
-      m.reply "Total HD:          #{stats[:real_hd]} GB"
-      m.reply "Free HD:           #{stats[:free_hd]} GB"
-      m.reply "Used HD:           #{stats[:used_hd]} GB"
     end
+    stats[:free_ram] = stats[:real_ram] - stats[:used_ram]
+    stats[:free_hd] = stats[:real_hd] - stats[:used_hd]
+    m.reply 'Cloud Statistics for ' + conf[:abiquo][:host].upcase
+    m.reply "Hypevisors:        #{stats[:hypervisors]}"
+    m.reply "Available CPUs:    #{stats[:available_cpus]}"
+    m.reply "Total RAM:         #{stats[:real_ram].megabytes.to.gigabytes} GB"
+    m.reply "Free RAM:          #{stats[:free_ram].megabytes.to.gigabytes} GB"
+    m.reply "Used RAM:          #{stats[:used_ram].megabytes.to.gigabytes} GB"
+    m.reply "Total HD:          #{stats[:real_hd]} GB"
+    m.reply "Free HD:           #{stats[:free_hd]} GB"
+    m.reply "Used HD:           #{stats[:used_hd]} GB"
   end
 end
 
