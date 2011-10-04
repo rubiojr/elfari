@@ -11,6 +11,32 @@ require 'cinch'
 require 'yaml'
 require 'rest-client'
 require 'alchemist'
+require 'rufus/scheduler'
+
+class GitDude
+  include Cinch::Plugin
+
+  timer 5, method: :new_stuff
+  def new_stuff
+    conf = YAML.load_file('config.yml')[:gitdude]
+    conf[:repos].each do |r|
+      next if not File.directory?(r[:path])
+      old_dir = Dir.pwd
+      Dir.chdir r[:path]
+      `git fetch -v 2>&1 | grep -F -- '->'`.each_line do |l|
+        if l =~ /.*\.\..*/
+          tokens = l.split
+          commit_range = tokens[0]
+          branch_name = tokens[1]
+          commit_messages = `git log #{commit_range} --pretty=format:'%s (%an)'`
+          Channel('#elfari-test').send "New commits in #{r[:name]}\n#{commit_messages}" 
+        end
+      end
+      Dir.chdir old_dir
+    end
+  end
+end
+
 
 if RUBY_VERSION =~ /1.9/
   Encoding.default_external = Encoding::UTF_8
@@ -24,6 +50,7 @@ bot = Cinch::Bot.new do
     c.server = conf[:server]
     c.channels = conf[:channels]
     c.nick = conf[:nick]
+    c.plugins.plugins = [GitDude]
   end
 
   on :message, /ponmelo\s*(http:\/\/www\.youtube\.com.*)/ do |m, query|

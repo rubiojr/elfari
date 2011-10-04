@@ -7,3 +7,11 @@
   :host: mothership
   :user: admin
   :password: xabiquo
+
+:gitdude:
+  :repos:
+    - :name: Abiquo
+      :path: '/Users/rubiojr/git/abiquo'
+    - :name: Abiquo Enterprise
+      :path: '/Users/rubiojr/git/abiquo-enterprise'
+        
