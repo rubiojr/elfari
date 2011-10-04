@@ -31,7 +31,7 @@ class Motherfuckers
   timer 900, method: :say
   def say
     ElFari::Config.config[:channels].each do |c|
-      Channel(c).send "Any news, motherfuckers?"
+      Channel(c.split.first).send "Any news, motherfuckers?"
     end
   end
 
@@ -46,14 +46,21 @@ class GitDude
     conf[:repos].each do |r|
       next if not File.directory?(r[:path])
       ENV['GIT_DIR'] = r[:path] + '/.git'
+      changes = []
       `git fetch -v 2>&1 | grep -F -- '->'`.each_line do |l|
         if l =~ /.*\.\..*/
-          tokens = l.split
-          commit_range = tokens[0]
-          branch_name = tokens[1]
-          commit_messages = `git log #{commit_range} --pretty=format:'%s (%an)'`
-          ElFari::Config.config[:channels].each do |c|
-            Channel(c).send "New commits in #{r[:name]}\n#{commit_messages}" 
+          changes << l
+        end
+      end
+      Channel(c.split.first).send("New commits in repo: #{r[:name]}") if not changes.empty?
+      changes.each do |l|
+        tokens = l.split
+        commit_range = tokens[0]
+        branch_name = tokens[1]
+        commit_messages = `git log #{commit_range} --pretty=format:'%s (%an)'`
+        ElFari::Config.config[:channels].each do |c|
+          commit_messages.each_line do |l|
+            Channel(c.split.first).send  "* #{l}\n\n"
           end
         end
       end
