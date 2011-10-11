@@ -13,6 +13,8 @@ require 'rest-client'
 require 'alchemist'
 require 'rufus/scheduler'
 
+$SAFE = 4
+
 module ElFari
 
   class Config
@@ -52,7 +54,6 @@ class GitDude
           changes << l
         end
       end
-      Channel(c.split.first).send("New commits in repo: #{r[:name]}") if not changes.empty?
       changes.each do |l|
         tokens = l.split
         commit_range = tokens[0]
@@ -60,7 +61,7 @@ class GitDude
         commit_messages = `git log #{commit_range} --pretty=format:'%s (%an)'`
         ElFari::Config.config[:channels].each do |c|
           commit_messages.each_line do |l|
-            Channel(c.split.first).send  "* #{l}\n\n"
+            Channel(c.split.first).send  "* [#{r[:name]}] #{l}\n\n"
           end
         end
       end
@@ -77,6 +78,18 @@ conf = ElFari::Config.config
 WeBee::Api.user = conf[:abiquo][:user]
 WeBee::Api.password = conf[:abiquo][:password]
 WeBee::Api.url = "http://#{conf[:abiquo][:host]}/api"
+
+class ControlWS
+  
+  def self.say(text, voice = :spanish)
+    if voice == :english
+      RestClient.post "http://bigdick:4567/say", :text => text, :voice => 'Alex'
+    else
+      RestClient.post "http://bigdick:4567/say", :text => text
+    end
+  end
+
+end
 
 bot = Cinch::Bot.new do
   configure do |c|
@@ -209,6 +222,14 @@ bot = Cinch::Bot.new do
     m.reply "Free HD:           #{stats[:free_hd]} GB"
     m.reply "Used HD:           #{stats[:used_hd]} GB"
   end
+  
+  on :message, /eval (.*)/ do |m, query|
+    begin
+    rs = ControlWS
+    eval query
+    rescue SyntaxError
+  end
+
 end
 
 bot.start
