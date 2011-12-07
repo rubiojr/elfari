@@ -1,0 +1,23 @@
+## Testing the template
+# knife kvm vm create --kvm-host blackops \
+#                     --vm-disk centos5-jeos-ip-info.qcow2 \
+#                     --vm-name abiquo-master --no-host-key-verify \
+#                     --ssh-password centos \
+#                     --template-file this_template_path
+#
+
+bash -c '
+if [ ! -f /usr/bin/chef-client ]; then
+  cd /tmp
+  rpm -Uvh http://rbel.frameos.org/rbel5
+  yum install -y ruby rubygem-chef
+else
+  echo WARNING: Chef client already installed.
+fi
+
+# install ntp, clock is important
+yum install -y ntp wget
+wget http://mirror.bcn.abiquo.com/chef-solo/abiquo-monolithic-master.tar.gz
+tar xzf abiquo-monolithic-master.tar.gz
+chef-solo -c solo.rb -j monolithic.json
+ntpdate -s pool.ntp.org'

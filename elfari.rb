@@ -5,6 +5,7 @@
 # gem install cinch
 # gem install rest-client
 #
+$: << File.dirname(__FILE__) + "/modules"
 require 'rubygems'
 require 'webee'
 require 'cinch'
@@ -12,8 +13,9 @@ require 'yaml'
 require 'rest-client'
 require 'alchemist'
 require 'rufus/scheduler'
+require 'abiquo-deployer'
 
-$SAFE = 4
+#$SAFE = 4
 
 module ElFari
 
@@ -96,7 +98,7 @@ bot = Cinch::Bot.new do
     c.server = conf[:server]
     c.channels = conf[:channels]
     c.nick = conf[:nick]
-    c.plugins.plugins = [Motherfuckers, GitDude]
+    c.plugins.plugins = [Motherfuckers]
   end
 
   on :message, /ponmelo\s*(http:\/\/www\.youtube\.com.*)/ do |m, query|
@@ -226,14 +228,31 @@ bot = Cinch::Bot.new do
     m.reply "Free HD:           #{stats[:free_hd]} GB"
     m.reply "Used HD:           #{stats[:used_hd]} GB"
   end
-  
-  on :message, /eval (.*)/ do |m, query|
-    begin
-    rs = ControlWS
-    eval query
-    rescue SyntaxError
-  end
 
+  on :message, /!deploy (.*)/ do |m|
+    if not AbiquoDeployer.authorized?(m.user.nick)
+      m.reply "I'm sorry folk, you are not authorized to deploy"
+    else
+      AbiquoDeployer.client = m
+      AbiquoDeployer.deploy
+    end
+  end
+  
+  on :message, /!list vms (.*)/ do |m, query|
+    #require 'pp'
+    AbiquoDeployer.list_vms(:host => query)
+    #m.reply "#{vm.name} #{vm.memory_size}"
+    #rescue Exception => e
+    #  m.reply "** Error when talking to the hypervisor"
+    #end
+  end
+  
+  #on :message, /eval (.*)/ do |m, query|
+  #  begin
+  #  rs = ControlWS
+  #  eval query
+  #  rescue SyntaxError
+  #end
 end
 
 bot.start
