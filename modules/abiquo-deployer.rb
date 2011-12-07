@@ -56,24 +56,29 @@ module AbiquoDeployer
       return
     end
     AbiquoDeployer.deploying = true
-    host = params[:host] || "blackops"
-    branch = params[:branch] || "master"
-    vm_memory = params[:vm_memory] || "1500"
-    disk = params[:disk] || File.dirname(__FILE__) + "/../files/centos5-jeos-ip-info.qcow2"
-    vm_name = params[:vm_name] || "abiquo-#{Time.now.to_i}"
-    vm_password = params[:vm_password] || "centos"
-    template_file = params[:template_file] || File.dirname(__FILE__) + "/bootstrap_templates/abiquo-monolithic-#{branch}.erb"
+    begin
+      host = params[:host] || "blackops"
+      branch = params[:branch] || "master"
+      vm_memory = params[:vm_memory] || "1500"
+      disk = params[:disk] || File.dirname(__FILE__) + "/../files/centos5-jeos-ip-info.qcow2"
+      vm_name = params[:vm_name] || "abiquo-#{Time.now.to_i}"
+      vm_password = params[:vm_password] || "centos"
+      template_file = params[:template_file] || File.dirname(__FILE__) + "/bootstrap_templates/abiquo-monolithic-#{branch}.erb"
 
-    log "deploying Abiquo MASTER..."
-    IO.popen("knife kvm vm create --vm-memory #{vm_memory} --kvm-host #{host} --vm-disk #{disk} --vm-name #{vm_name} --no-host-key-verify --ssh-password #{vm_password} --template-file #{template_file}") do |p|
-      p.sync = true
-      p.each do |l| 
-        pre_process_msg l
-        out = filter_output(l)
-        log out if out
+      log "deploying Abiquo MASTER..."
+      IO.popen("knife kvm vm create --vm-memory #{vm_memory} --kvm-host #{host} --vm-disk #{disk} --vm-name #{vm_name} --no-host-key-verify --ssh-password #{vm_password} --template-file #{template_file}") do |p|
+        p.sync = true
+        p.each do |l| 
+          pre_process_msg l
+          out = filter_output(l)
+          log out if out
+        end
       end
+    rescue => e
+      log "Something went wrong :S"
+    ensure
+      AbiquoDeployer.deploying = false
     end
-    AbiquoDeployer.deploying = false
     if $? == 0
       log "Abiquo MASTER ready!"
     else
