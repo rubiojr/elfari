@@ -47,6 +47,8 @@ module AbiquoDeployer
   def self.pre_process_msg(line)
     if line =~ /Setting the run_list/
       log "Bootstraping Abiquo with Chef..."
+    elsif line =~ /Bootstrapping Chef/
+      log "Bootstraping Opscode Chef..."
     end
   end
 
