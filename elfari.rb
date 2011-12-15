@@ -14,6 +14,7 @@ require 'rest-client'
 require 'alchemist'
 require 'rufus/scheduler'
 require 'abiquo-deployer'
+require 'uri'
 
 #$SAFE = 4
 
@@ -170,6 +171,16 @@ bot = Cinch::Bot.new do
 		  i+=1
 	  end
 	  m.reply "#{list}"
+  end
+
+  on :message, /rimamelo (.*)/ do |m, query|
+  	uri = "http://rimamelo.herokuapp.com/web/api?model.rhyme=#{URI.escape(query)}"
+        rhyme = RestClient.get(uri)
+        rhyme["<rhyme>"] = ""
+        rhyme["</rhyme>"] = ""
+        rhyme["<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"] = ""
+        m.reply "#{rhyme}"
+        RestClient.post "http://bigdick:4567/say", :text => rhyme
   end
 
   on :message, /mothership abusers/ do  |m, query|
