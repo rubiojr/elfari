@@ -180,7 +180,7 @@ bot = Cinch::Bot.new do
         rhyme["</rhyme>"] = ""
         rhyme["<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"] = ""
         m.reply "#{rhyme}"
-        RestClient.post "http://bigdick:4567/say", :text => rhyme
+        RestClient.post "http://bigdick:4567/say", :text => "#{rhyme}"
   end
 
   on :message, /mothership abusers/ do  |m, query|
