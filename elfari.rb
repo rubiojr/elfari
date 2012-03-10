@@ -86,9 +86,9 @@ class ControlWS
   
   def self.say(text, voice = :spanish)
     if voice == :english
-      RestClient.post "http://bigdick:4567/say", :text => text, :voice => 'Alex'
+      RestClient.post "http://bigdick.local:4567/say", :text => text, :voice => 'Alex'
     else
-      RestClient.post "http://bigdick:4567/say", :text => text
+      RestClient.post "http://bigdick.local:4567/say", :text => text
     end
   end
 
@@ -103,40 +103,40 @@ bot = Cinch::Bot.new do
   end
 
   on :message, /ponmelo\s*(http:\/\/www\.youtube\.com.*)/ do |m, query|
-    RestClient.post "http://bigdick:4567/youtube", :url => query
-    title = RestClient.get('http://bigdick:4567/current_video')
+    RestClient.post "http://bigdick.local:4567/youtube", :url => query
+    title = RestClient.get('http://bigdick.local:4567/current_video')
     while title.nil? or title.strip.chomp.empty?
-      title = RestClient.get('http://bigdick:4567/current_video')
+      title = RestClient.get('http://bigdick.local:4567/current_video')
     end
     m.reply "Tomalo, chato: #{title}"
   end
   on :message, /dimelo (.*)/ do |m, query|
-    RestClient.post "http://bigdick:4567/say", :text => query
+    RestClient.post "http://bigdick.local:4567/say", :text => query
   end
   on :message, /in-inglis (.*)/ do |m, query|
-    RestClient.post "http://bigdick:4567/say", :text => query, :voice => 'Alex'
+    RestClient.post "http://bigdick.local:4567/say", :text => query, :voice => 'Alex'
   end
   on :message, /ayudame/ do |m|
     m.reply 'Ahi van los comandos, chavalote!: ayudame dimelo ponmelo volumen mele in-inglis ponmeargo ponmeer quetiene'
   end
   on :message, /volumen (.*)/ do |m, query|
-    RestClient.post "http://bigdick:4567/volume", :vol => query
+    RestClient.post "http://bigdick.local:4567/volume", :vol => query
   end
   on :message, /mele/ do |m, query|
-    RestClient.post "http://bigdick:4567/video", :url => 'http://gobarbra.com/hit/new-0416a9aa8de56543b149d7ffb477196f'
+    RestClient.post "http://bigdick.local:4567/video", :url => 'http://gobarbra.com/hit/new-0416a9aa8de56543b149d7ffb477196f'
     m.reply "Paralo Paul!!!"
   end
   on :message, /vino/ do |m, query|
-    RestClient.post "http://bigdick:4567/video", :url => 'http://www.youtube.com/watch?v=-nQgsEbU9C4'
+    RestClient.post "http://bigdick.local:4567/video", :url => 'http://www.youtube.com/watch?v=-nQgsEbU9C4'
     m.reply "Viva el vino!!!"
   end
   on :message, /ponme\s*argo\s*(.*)/ do |m, query|
     db = File.readlines('database')
     play = db[(rand * (db.size - 1)).to_i].split(/ /)[0]
-    RestClient.post "http://bigdick:4567/youtube", :url => play
-    title = RestClient.get('http://bigdick:4567/current_video')
+    RestClient.post "http://bigdick.local:4567/youtube", :url => play
+    title = RestClient.get('http://bigdick.local:4567/current_video')
     while title.nil? or title.strip.chomp.empty?
-      title = RestClient.get('http://bigdick:4567/current_video')
+      title = RestClient.get('http://bigdick.local:4567/current_video')
     end
     m.reply "Tomalo, chato: #{title}"
   end
@@ -147,17 +147,17 @@ bot = Cinch::Bot.new do
     db.each do |line|
       if line =~ /#{query}/i
         play = line.split(/ /)[0]
-        RestClient.post "http://bigdick:4567/youtube", :url => play
-        title = RestClient.get('http://bigdick:4567/current_video')
+        RestClient.post "http://bigdick.local:4567/youtube", :url => play
+        title = RestClient.get('http://bigdick.local:4567/current_video')
         while title.nil? or title.strip.chomp.empty?
-            title = RestClient.get('http://bigdick:4567/current_video')
+            title = RestClient.get('http://bigdick.local:4567/current_video')
         end
         m.reply "Tomalo, chato: #{title}"
         found = true
         break
       end
     end
-  	RestClient.post "http://bigdick:4567/say", :text => "No tengo er #{query}" if !found
+  	RestClient.post "http://bigdick.local:4567/say", :text => "No tengo er #{query}" if !found
   	m.reply "No tengo er: #{query}" if !found
   end
 
@@ -180,7 +180,7 @@ bot = Cinch::Bot.new do
         rhyme["</rhyme>"] = ""
         rhyme["<?xml version=\"1.0\" encoding=\"ISO-8859-1\"?>"] = ""
         m.reply "#{rhyme}"
-        RestClient.post "http://bigdick:4567/say", :text => "#{rhyme}"
+        RestClient.post "http://bigdick.local:4567/say", :text => "#{rhyme}"
   end
 
   on :message, /mothership abusers/ do  |m, query|
